@@ -6,6 +6,9 @@ const nowTitle = document.getElementById("now-title");
 const progressFill = document.getElementById("progress-fill");
 const progressText = document.getElementById("progress-text");
 const routeButton = document.getElementById("route-button");
+const routeMap = document.getElementById("route-map");
+const mapRouteTitle = document.getElementById("map-route-title");
+const mapOpenLink = document.getElementById("map-open-link");
 
 const statusEmoji = {
   "Pending": "⬜",
@@ -18,6 +21,45 @@ const statusEmoji = {
 
 function statusClass(status) {
   return String(status || "Pending").replaceAll(" ", "-");
+}
+
+function directionsEmbedLink(origin, destination) {
+  const saddr = encodeURIComponent(origin.address);
+  const daddr = encodeURIComponent(destination.address);
+  return `https://maps.google.com/maps?saddr=${saddr}&daddr=${daddr}&output=embed`;
+}
+
+function directionsOpenLink(origin, destination) {
+  const saddr = encodeURIComponent(origin.address);
+  const daddr = encodeURIComponent(destination.address);
+  return `https://www.google.com/maps/dir/?api=1&origin=${saddr}&destination=${daddr}&travelmode=driving`;
+}
+
+function getCurrentAndNext(merged) {
+  const active = merged.find(stop => ["En Route", "Started", "Delayed"].includes(stop.status));
+  const current = active
+    || merged.find(stop => stop.status !== "Completed" && stop.status !== "Skipped")
+    || merged[merged.length - 1];
+
+  const currentIndex = merged.findIndex(stop => stop.id === current.id);
+  const next = merged.slice(currentIndex + 1).find(stop => stop.status !== "Completed" && stop.status !== "Skipped")
+    || merged[currentIndex + 1]
+    || null;
+
+  return { current, next };
+}
+
+function updateMap(current, next) {
+  if (!next) {
+    mapRouteTitle.textContent = `${current.name} is the final stop`;
+    routeMap.src = mapsLink(current.address) + "&output=embed";
+    mapOpenLink.href = mapsLink(current.address);
+    return;
+  }
+
+  mapRouteTitle.textContent = `${current.name} → ${next.name}`;
+  routeMap.src = directionsEmbedLink(current, next);
+  mapOpenLink.href = directionsOpenLink(current, next);
 }
 
 function render(routeData) {
@@ -41,11 +83,9 @@ function render(routeData) {
   progressFill.style.width = `${percent}%`;
   progressText.textContent = `${completed} / ${merged.length} stops completed`;
 
-  const current = merged.find(stop => ["En Route", "Started", "Delayed"].includes(stop.status))
-    || merged.find(stop => stop.status !== "Completed" && stop.status !== "Skipped")
-    || merged[merged.length - 1];
-
+  const { current, next } = getCurrentAndNext(merged);
   nowTitle.textContent = `${statusEmoji[current.status] || "⬜"} ${current.name} — ${current.status}`;
+  updateMap(current, next);
 }
 
 routeButton.href = routeLink();
@@ -61,4 +101,5 @@ onSnapshot(q, snapshot => {
 }, error => {
   console.error(error);
   nowTitle.textContent = "Unable to load live status";
+  mapRouteTitle.textContent = "Unable to load map route";
 });
