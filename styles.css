@@ -48,7 +48,8 @@ h1 {
   letter-spacing: 1px;
 }
 
-.status-bar {
+.status-bar,
+.map-card {
   border: 1px solid var(--border);
   background: linear-gradient(180deg, rgba(17,17,17,.95), rgba(5,5,5,.95));
   border-radius: 14px;
@@ -89,6 +90,46 @@ h1 {
   margin-top: 8px;
   color: var(--muted);
   font-size: 14px;
+}
+
+.map-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.map-route-title {
+  font-size: 22px;
+  font-weight: 900;
+  margin-top: 4px;
+}
+
+.map-open-link {
+  color: #050505;
+  background: var(--gold);
+  text-decoration: none;
+  padding: 9px 13px;
+  border-radius: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: 13px;
+}
+
+.route-map {
+  width: 100%;
+  height: 320px;
+  border: 0;
+  border-radius: 12px;
+  background: #151515;
+}
+
+.map-note {
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+  margin-top: 9px;
 }
 
 .list {
@@ -254,5 +295,8 @@ h1 {
   h1 { font-size: 36px; }
   .name { font-size: 21px; }
   .addr { font-size: 15px; }
+  .now-title { font-size: 22px; }
+  .map-route-title { font-size: 19px; }
+  .route-map { height: 260px; }
   .admin-buttons { grid-template-columns: 1fr; }
 }
