@@ -30,7 +30,7 @@ async function seedStops() {
     showNotice("Error initializing Firebase. Check Firestore rules.");
   } finally {
     seedButton.disabled = false;
-    seedButton.textContent = "Initialize / Repair Firebase Data";
+    seedButton.textContent = "Initialize Firebase Data";
   }
 }
 
@@ -44,7 +44,7 @@ async function setStatus(stop, status) {
     showNotice(`${stop.name} marked ${status}.`);
   } catch (err) {
     console.error(err);
-    showNotice("Update failed. Try Initialize / Repair Firebase Data first.");
+    showNotice("Update failed. Tap Initialize Firebase Data first.");
   }
 }
 
@@ -76,16 +76,14 @@ function render() {
 seedButton.addEventListener("click", seedStops);
 render();
 
-onSnapshot(doc(db, "meta", "admin"), () => {}, () => {});
-onSnapshot({
-  next: () => {}
-});
-
 stops.forEach(stop => {
   onSnapshot(doc(db, "stops", stop.id), snapshot => {
     if (snapshot.exists()) {
       currentStatuses[stop.id] = snapshot.data().status || "Pending";
       render();
     }
+  }, error => {
+    console.error(error);
+    showNotice("Unable to connect to Firebase.");
   });
 });
