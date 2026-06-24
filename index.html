@@ -19,6 +19,18 @@
       <div id="progress-text" class="progress-text">0 / 11 stops completed</div>
     </section>
 
+    <section class="map-card">
+      <div class="map-header">
+        <div>
+          <div class="now-label">Current Route</div>
+          <div id="map-route-title" class="map-route-title">Loading route...</div>
+        </div>
+        <a id="map-open-link" class="map-open-link" href="#" target="_blank" rel="noopener noreferrer">Open</a>
+      </div>
+      <iframe id="route-map" class="route-map" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      <div class="map-note">Map only shows the current majlis to the next majlis.</div>
+    </section>
+
     <section id="route-list" class="list"></section>
 
     <a id="route-button" class="route-btn" href="#" target="_blank" rel="noopener noreferrer">Open Full Route in Google Maps</a>
