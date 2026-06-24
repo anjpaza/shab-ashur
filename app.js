@@ -6,6 +6,7 @@ const nowTitle = document.getElementById("now-title");
 const progressFill = document.getElementById("progress-fill");
 const progressText = document.getElementById("progress-text");
 const routeButton = document.getElementById("route-button");
+const mapCard = document.getElementById("map-card");
 const routeMap = document.getElementById("route-map");
 const mapRouteTitle = document.getElementById("map-route-title");
 const mapOpenLink = document.getElementById("map-open-link");
@@ -36,10 +37,9 @@ function directionsOpenLink(origin, destination) {
 }
 
 function getCurrentAndNext(merged) {
+  const lastCompletedIndex = merged.map(stop => stop.status).lastIndexOf("Completed");
   const active = merged.find(stop => ["En Route", "Started", "Delayed"].includes(stop.status));
-  const current = active
-    || merged.find(stop => stop.status !== "Completed" && stop.status !== "Skipped")
-    || merged[merged.length - 1];
+  const current = active || merged[lastCompletedIndex] || merged.find(stop => stop.status !== "Completed" && stop.status !== "Skipped") || merged[merged.length - 1];
 
   const currentIndex = merged.findIndex(stop => stop.id === current.id);
   const next = merged.slice(currentIndex + 1).find(stop => stop.status !== "Completed" && stop.status !== "Skipped")
@@ -49,7 +49,15 @@ function getCurrentAndNext(merged) {
   return { current, next };
 }
 
-function updateMap(current, next) {
+function updateMap(current, next, shouldShowMap) {
+  if (!shouldShowMap) {
+    mapCard.classList.add("hidden");
+    routeMap.removeAttribute("src");
+    return;
+  }
+
+  mapCard.classList.remove("hidden");
+
   if (!next) {
     mapRouteTitle.textContent = `${current.name} is the final stop`;
     routeMap.src = mapsLink(current.address) + "&output=embed";
@@ -85,7 +93,7 @@ function render(routeData) {
 
   const { current, next } = getCurrentAndNext(merged);
   nowTitle.textContent = `${statusEmoji[current.status] || "⬜"} ${current.name} — ${current.status}`;
-  updateMap(current, next);
+  updateMap(current, next, completed > 0);
 }
 
 routeButton.href = routeLink();
