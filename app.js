@@ -49,21 +49,36 @@ function directionsOpenLink(origin, destination) {
   return `https://www.google.com/maps/dir/?api=1&origin=${saddr}&destination=${daddr}&travelmode=driving`;
 }
 
-function getCurrentAndNext(merged) {
-  const lastCompletedIndex = merged.map(stop => stop.status).lastIndexOf("Completed");
-  const active = merged.find(stop => ["En Route", "Started", "Delayed"].includes(stop.status));
-  const current = active || merged[lastCompletedIndex] || merged.find(stop => stop.status !== "Completed" && stop.status !== "Skipped") || merged[merged.length - 1];
-
-  const currentIndex = merged.findIndex(stop => stop.id === current.id);
-  const next = merged.slice(currentIndex + 1).find(stop => stop.status !== "Completed" && stop.status !== "Skipped")
-    || merged[currentIndex + 1]
-    || null;
-
-  return { current, next };
+function getDisplayCurrent(merged) {
+  return merged.find(stop => ["En Route", "Started", "Delayed"].includes(stop.status))
+    || merged.find(stop => stop.status !== "Completed" && stop.status !== "Skipped")
+    || merged[merged.length - 1];
 }
 
-function updateMap(current, next, shouldShowMap) {
-  if (!shouldShowMap) {
+function getMapRoute(merged) {
+  const enRouteStop = merged.find(stop => stop.status === "En Route");
+
+  if (enRouteStop) {
+    const enRouteIndex = merged.findIndex(stop => stop.id === enRouteStop.id);
+    const previous = merged[enRouteIndex - 1] || null;
+    return { origin: previous, destination: enRouteStop };
+  }
+
+  const lastCompletedIndex = merged.map(stop => stop.status).lastIndexOf("Completed");
+
+  if (lastCompletedIndex >= 0) {
+    const origin = merged[lastCompletedIndex];
+    const destination = merged.slice(lastCompletedIndex + 1).find(stop => stop.status !== "Completed" && stop.status !== "Skipped")
+      || merged[lastCompletedIndex + 1]
+      || null;
+    return { origin, destination };
+  }
+
+  return { origin: null, destination: null };
+}
+
+function updateMap(origin, destination, shouldShowMap) {
+  if (!shouldShowMap || !origin) {
     mapCard.classList.add("hidden");
     routeMap.removeAttribute("src");
     return;
@@ -71,16 +86,16 @@ function updateMap(current, next, shouldShowMap) {
 
   mapCard.classList.remove("hidden");
 
-  if (!next) {
-    mapRouteTitle.textContent = `${current.name} is the final stop`;
-    routeMap.src = mapsLink(current.address) + "&output=embed";
-    mapOpenLink.href = mapsLink(current.address);
+  if (!destination) {
+    mapRouteTitle.textContent = `${origin.name} is the final stop`;
+    routeMap.src = mapsLink(origin.address) + "&output=embed";
+    mapOpenLink.href = mapsLink(origin.address);
     return;
   }
 
-  mapRouteTitle.textContent = `${current.name} → ${next.name}`;
-  routeMap.src = directionsEmbedLink(current, next);
-  mapOpenLink.href = directionsOpenLink(current, next);
+  mapRouteTitle.textContent = `${origin.name} → ${destination.name}`;
+  routeMap.src = directionsEmbedLink(origin, destination);
+  mapOpenLink.href = directionsOpenLink(origin, destination);
 }
 
 function stageLine(stop) {
@@ -113,10 +128,12 @@ function render(routeData) {
   progressFill.style.width = `${percent}%`;
   progressText.textContent = `${completed} / ${merged.length} stops completed`;
 
-  const { current, next } = getCurrentAndNext(merged);
+  const current = getDisplayCurrent(merged);
   const currentStage = current.status === "Started" && current.stage ? ` — ${current.stage}` : "";
   nowTitle.textContent = `${statusEmoji[current.status] || "⬜"} ${current.name} — ${current.status}${currentStage}`;
-  updateMap(current, next, completed > 0);
+
+  const { origin, destination } = getMapRoute(merged);
+  updateMap(origin, destination, completed > 0 || Boolean(origin));
 }
 
 trackVisit();
