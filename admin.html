@@ -12,7 +12,13 @@
     <h1>Admin</h1>
     <div class="subtitle">Shab e Ashur Live Status</div>
 
-    <div id="save-notice" class="notice">Tap a status to update it live.</div>
+    <section class="status-bar">
+      <div class="now-label">Visitors</div>
+      <div id="visitor-stats" class="now-title">Loading visitor stats...</div>
+      <div class="progress-text">Unique visitors and total page views on the public page.</div>
+    </section>
+
+    <div id="save-notice" class="notice">Tap a status or stage to update it live.</div>
     <button id="seed-button" class="seed-btn">Initialize Firebase Data</button>
 
     <section id="admin-list" class="admin-grid"></section>
