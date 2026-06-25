@@ -70,10 +70,18 @@ function updateMap(current, next, shouldShowMap) {
   mapOpenLink.href = directionsOpenLink(current, next);
 }
 
+function stageLine(stop) {
+  if (stop.status === "Started" && stop.stage) {
+    return `<div class="stage-badge">Current Stage: ${stop.stage}</div>`;
+  }
+  return "";
+}
+
 function render(routeData) {
   const merged = stops.map(stop => ({
     ...stop,
     status: routeData[stop.id]?.status || "Pending",
+    stage: routeData[stop.id]?.stage || "",
     updatedAt: routeData[stop.id]?.updatedAt || null
   }));
 
@@ -83,6 +91,7 @@ function render(routeData) {
       <div class="name">${stop.name}${stop.note ? `<div class="final">(${stop.note})</div>` : ""}</div>
       <a class="addr" href="${mapsLink(stop.address)}" target="_blank" rel="noopener noreferrer">${stop.address}</a>
       <div class="badge ${statusClass(stop.status)}">${statusEmoji[stop.status] || "⬜"} ${stop.status}</div>
+      ${stageLine(stop)}
     </div>
   `).join("");
 
@@ -92,7 +101,8 @@ function render(routeData) {
   progressText.textContent = `${completed} / ${merged.length} stops completed`;
 
   const { current, next } = getCurrentAndNext(merged);
-  nowTitle.textContent = `${statusEmoji[current.status] || "⬜"} ${current.name} — ${current.status}`;
+  const currentStage = current.status === "Started" && current.stage ? ` — ${current.stage}` : "";
+  nowTitle.textContent = `${statusEmoji[current.status] || "⬜"} ${current.name} — ${current.status}${currentStage}`;
   updateMap(current, next, completed > 0);
 }
 
