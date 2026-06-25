@@ -8,7 +8,8 @@ import {
   onSnapshot,
   serverTimestamp,
   query,
-  orderBy
+  orderBy,
+  increment
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -23,4 +24,4 @@ const firebaseConfig = {
 
 export const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
-export { collection, doc, setDoc, updateDoc, onSnapshot, serverTimestamp, query, orderBy };
+export { collection, doc, setDoc, updateDoc, onSnapshot, serverTimestamp, query, orderBy, increment };
