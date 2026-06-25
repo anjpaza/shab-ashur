@@ -13,6 +13,7 @@ export const stops = [
 ];
 
 export const statuses = ["Pending", "En Route", "Started", "Completed", "Delayed", "Skipped"];
+export const stages = ["Hadis e Kisa", "Salaam", "Marsiya", "Speech", "Maatam"];
 
 export function mapsLink(address) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
