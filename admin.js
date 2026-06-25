@@ -4,6 +4,7 @@ import { stops, statuses, stages, mapsLink } from "./data.js";
 const adminList = document.getElementById("admin-list");
 const seedButton = document.getElementById("seed-button");
 const saveNotice = document.getElementById("save-notice");
+const visitorStats = document.getElementById("visitor-stats");
 
 const currentData = {};
 
@@ -37,11 +38,7 @@ async function seedStops() {
 
 async function setStatus(stop, status) {
   try {
-    const payload = {
-      status,
-      updatedAt: serverTimestamp(),
-      updatedBy: "Danish"
-    };
+    const payload = { status, updatedAt: serverTimestamp(), updatedBy: "Danish" };
 
     if (status !== "Started") {
       payload.stage = "";
@@ -114,6 +111,14 @@ function render() {
 
 seedButton.addEventListener("click", seedStops);
 render();
+
+onSnapshot(doc(db, "stats", "visitors"), snapshot => {
+  const data = snapshot.exists() ? snapshot.data() : {};
+  visitorStats.textContent = `${data.uniqueVisitors || 0} visitors, ${data.pageViews || 0} views`;
+}, error => {
+  console.error(error);
+  visitorStats.textContent = "Unable to load visitor stats";
+});
 
 stops.forEach(stop => {
   onSnapshot(doc(db, "stops", stop.id), snapshot => {
