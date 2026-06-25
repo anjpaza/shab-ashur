@@ -1,4 +1,4 @@
-import { db, collection, onSnapshot, query, orderBy } from "./firebase-config.js";
+import { db, collection, doc, setDoc, onSnapshot, query, orderBy, increment, serverTimestamp } from "./firebase-config.js";
 import { stops, mapsLink, routeLink } from "./data.js";
 
 const list = document.getElementById("route-list");
@@ -22,6 +22,19 @@ const statusEmoji = {
 
 function statusClass(status) {
   return String(status || "Pending").replaceAll(" ", "-");
+}
+
+function trackVisit() {
+  const uniqueKey = "apa-shabashur-visitor-counted";
+  const isNewVisitor = localStorage.getItem(uniqueKey) !== "true";
+
+  setDoc(doc(db, "stats", "visitors"), {
+    pageViews: increment(1),
+    uniqueVisitors: increment(isNewVisitor ? 1 : 0),
+    lastVisitAt: serverTimestamp()
+  }, { merge: true }).then(() => {
+    if (isNewVisitor) localStorage.setItem(uniqueKey, "true");
+  }).catch(error => console.error("Visitor tracking failed", error));
 }
 
 function directionsEmbedLink(origin, destination) {
@@ -106,6 +119,7 @@ function render(routeData) {
   updateMap(current, next, completed > 0);
 }
 
+trackVisit();
 routeButton.href = routeLink();
 render({});
 
